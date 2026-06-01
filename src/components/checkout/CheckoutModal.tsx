@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { X, CreditCard, User, Mail, Phone, MapPin, Lock, CheckCircle, ShieldCheck } from 'lucide-react';
 import { Car } from '@/lib/types';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, estimateShipping } from '@/lib/utils';
 import Image from 'next/image';
 
 interface Props {
@@ -19,6 +19,9 @@ export default function CheckoutModal({ car, onClose }: Props) {
 
   const [buyer, setBuyer] = useState({ name: '', email: '', phone: '', address: '', city: '', zip: '' });
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
+
+  const shipping = estimateShipping(car.price);
+  const total = car.price + shipping;
 
   const formatCardNumber = (val: string) =>
     val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
@@ -250,9 +253,17 @@ export default function CheckoutModal({ car, onClose }: Props) {
                         <span className="font-medium" style={{ color: 'var(--text)' }}>{value}</span>
                       </div>
                     ))}
+                    <div className="flex justify-between py-1.5">
+                      <span style={{ color: 'var(--muted)' }}>Vehicle price</span>
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>{formatPrice(car.price)}</span>
+                    </div>
+                    <div className="flex justify-between py-1.5 border-b" style={{ borderColor: 'var(--border)' }}>
+                      <span style={{ color: 'var(--muted)' }}>Shipping &amp; delivery</span>
+                      <span className="font-medium" style={{ color: 'var(--text)' }}>{formatPrice(shipping)}</span>
+                    </div>
                     <div className="flex justify-between py-2">
                       <span className="font-bold" style={{ color: 'var(--text)' }}>Total Due</span>
-                      <span className="text-xl font-black" style={{ color: 'var(--accent)' }}>{formatPrice(car.price)}</span>
+                      <span className="text-xl font-black" style={{ color: 'var(--accent)' }}>{formatPrice(total)}</span>
                     </div>
                   </div>
                   <div className="flex gap-3">

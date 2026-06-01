@@ -7,7 +7,7 @@ import { formatPrice, formatMileage } from '@/lib/utils';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ImageGallery from '@/components/detail/ImageGallery';
-import FinanceCalculator from '@/components/detail/FinanceCalculator';
+import PriceSummary from '@/components/detail/PriceSummary';
 import SellerInfo from '@/components/detail/SellerInfo';
 import ContactModal from '@/components/detail/ContactModal';
 import CheckoutModal from '@/components/checkout/CheckoutModal';
@@ -209,8 +209,8 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                   </button>
                 </div>
 
+                <PriceSummary car={car} />
                 <SellerInfo seller={car.seller} onContact={() => setShowContact(true)} />
-                <FinanceCalculator carPrice={car.price} />
               </div>
             </div>
           </div>

@@ -158,6 +158,11 @@
     color: var(--text);
   }
 
+  /* Hero search-bar select */
+  .hero-select {
+    @apply w-full bg-transparent text-sm font-medium text-white outline-none appearance-none cursor-pointer py-1.5 pr-5;
+  }
+
   /* Thin top-eyebrow rule — used sparingly */
   .eyebrow {
     @apply inline-flex items-center gap-2 text-xs font-medium tracking-wide;
@@ -266,6 +271,27 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .animate-fade-in-up { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-slide-in-left { animation: slideInLeft 0.5s ease forwards; }
 .animate-slide-in-right { animation: slideInRight 0.5s ease forwards; }
+
+/* Cinematic slow zoom for the active hero slide */
+@keyframes kenBurns {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.14); }
+}
+.animate-ken-burns { animation: kenBurns 7s ease-out forwards; }
+
+/* Soft entrance for hero eyebrow letter-spacing */
+@keyframes fadeInBlur {
+  from { opacity: 0; filter: blur(6px); transform: translateY(10px); }
+  to { opacity: 1; filter: blur(0); transform: translateY(0); }
+}
+.animate-fade-in-blur { animation: fadeInBlur 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* Continuous marque marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 38s linear infinite; }
 
 .skeleton {
   background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%);

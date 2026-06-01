@@ -12,19 +12,12 @@ export function formatMileage(mileage: number): string {
   return new Intl.NumberFormat('en-US').format(mileage) + ' mi';
 }
 
-export function calcMonthlyPayment(
-  price: number,
-  downPayment: number,
-  annualRate: number,
-  termMonths: number
-): number {
-  const principal = price - downPayment;
-  if (annualRate === 0) return principal / termMonths;
-  const monthlyRate = annualRate / 100 / 12;
-  const payment =
-    (principal * monthlyRate * Math.pow(1 + monthlyRate, termMonths)) /
-    (Math.pow(1 + monthlyRate, termMonths) - 1);
-  return Math.round(payment);
+// Flat-rate enclosed transport, tiered by vehicle value.
+// We sell pay-in-full; this is the shipping added on top of the car price.
+export function estimateShipping(price: number): number {
+  if (price < 30000) return 899;
+  if (price < 60000) return 1299;
+  return 1799;
 }
 
 export function getRatingStars(rating: number): string {

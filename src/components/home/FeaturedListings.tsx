@@ -40,12 +40,20 @@ export default function FeaturedListings() {
     <section className="py-24 bg-[var(--surface-2)] px-4 border-t border-gray-100" aria-label="Featured car listings">
       <div className="max-w-[95rem] mx-auto px-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
-          <div>
-            <h2 className="display text-3xl md:text-4xl font-semibold text-gray-900 tracking-tight mb-3">Featured inventory</h2>
-            <p className="text-gray-500 text-lg font-light">A selection of our finest vehicles, each inspected and ready.</p>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-6">
+          <div className="max-w-xl">
+            <span className="inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.25em] text-gray-400">
+              <span className="h-px w-6 bg-gray-300" />
+              Featured Inventory
+            </span>
+            <h2 className="display text-3xl md:text-5xl font-semibold text-gray-900 tracking-tight leading-[1.05] mt-3 mb-4">
+              Handpicked for the&nbsp;drive ahead
+            </h2>
+            <p className="text-gray-500 text-lg font-light leading-relaxed">
+              Every vehicle in our collection is inspected, certified, and ready to deliver — chosen for those who refuse to settle.
+            </p>
           </div>
-          <Link href="/cars" className="group flex items-center gap-2 text-sm font-medium text-gray-900 border-b border-gray-900 pb-0.5 hover:text-gray-500 hover:border-gray-300 transition-colors">
+          <Link href="/cars" className="group shrink-0 flex items-center gap-2 text-sm font-medium text-gray-900 border-b border-gray-900 pb-0.5 hover:text-gray-500 hover:border-gray-300 transition-colors">
             View all cars <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
