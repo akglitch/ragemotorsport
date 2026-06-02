@@ -18,6 +18,7 @@ const conditionColors: Record<string, string> = {
   New: 'badge-green',
   Used: 'badge-blue',
   Certified: 'badge-orange',
+  Salvage: 'badge-red',
 };
 
 export default function CarCard({

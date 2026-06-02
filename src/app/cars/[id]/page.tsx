@@ -81,7 +81,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   };
 
   const conditionColors: Record<string, string> = {
-    New: 'badge-green', Used: 'badge-blue', Certified: 'badge-orange',
+    New: 'badge-green', Used: 'badge-blue', Certified: 'badge-orange', Salvage: 'badge-red',
   };
 
   return (

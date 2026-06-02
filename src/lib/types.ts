@@ -18,7 +18,7 @@ export interface Car {
   fuelType: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid';
   transmission: 'Automatic' | 'Manual';
   seats: number;
-  condition: 'New' | 'Used' | 'Certified';
+  condition: 'New' | 'Used' | 'Certified' | 'Salvage';
   image: string;
   images: string[];
   description: string;
@@ -43,6 +43,7 @@ export interface FilterState {
   yearMin: number;
   yearMax: number;
   conditions: string[];
+  categories: string[];
   search: string;
 }
 

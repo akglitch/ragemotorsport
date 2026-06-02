@@ -132,6 +132,9 @@
   .badge-blue {
     @apply bg-slate-100 text-slate-700 border border-slate-200;
   }
+  .badge-red {
+    @apply bg-rose-50 text-rose-700 border border-rose-100;
+  }
 
   .section-title {
     @apply text-3xl md:text-5xl font-semibold tracking-tight;
@@ -271,6 +274,18 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .animate-fade-in-up { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-slide-in-left { animation: slideInLeft 0.5s ease forwards; }
 .animate-slide-in-right { animation: slideInRight 0.5s ease forwards; }
+
+/* Mobile filter sheet */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeIn 0.25s ease forwards; }
+.animate-sheet-up { animation: sheetUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 /* Cinematic slow zoom for the active hero slide */
 @keyframes kenBurns {

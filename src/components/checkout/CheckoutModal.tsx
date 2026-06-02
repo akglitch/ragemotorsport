@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { X, CreditCard, User, Mail, Phone, MapPin, Lock, CheckCircle, ShieldCheck } from 'lucide-react';
+import { X, User, Mail, Phone, MapPin, MessageSquare, ShieldCheck, MessageCircle } from 'lucide-react';
 import { Car } from '@/lib/types';
 import { formatPrice, estimateShipping } from '@/lib/utils';
+import { carOrderLink, OrderBuyer } from '@/lib/config';
 import Image from 'next/image';
 
 interface Props {
@@ -10,38 +11,30 @@ interface Props {
   onClose: () => void;
 }
 
-type Step = 'info' | 'payment' | 'confirm';
+type Step = 'info' | 'review';
 
 export default function CheckoutModal({ car, onClose }: Props) {
   const [step, setStep] = useState<Step>('info');
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [sent, setSent] = useState(false);
 
-  const [buyer, setBuyer] = useState({ name: '', email: '', phone: '', address: '', city: '', zip: '' });
-  const [card, setCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
+  const [buyer, setBuyer] = useState<OrderBuyer>({ name: '', email: '', phone: '', city: '', notes: '' });
 
   const shipping = estimateShipping(car.price);
   const total = car.price + shipping;
 
-  const formatCardNumber = (val: string) =>
-    val.replace(/\D/g, '').slice(0, 16).replace(/(.{4})/g, '$1 ').trim();
-
-  const formatExpiry = (val: string) =>
-    val.replace(/\D/g, '').slice(0, 4).replace(/(.{2})/, '$1/');
-
-  const handleConfirm = () => {
-    setLoading(true);
-    setTimeout(() => { setLoading(false); setDone(true); }, 1800);
+  const handleSend = () => {
+    const url = typeof window !== 'undefined' ? window.location.href : undefined;
+    window.open(carOrderLink(car, buyer, url), '_blank', 'noopener,noreferrer');
+    setSent(true);
   };
 
   const steps: { id: Step; label: string }[] = [
-    { id: 'info', label: 'Your Info' },
-    { id: 'payment', label: 'Payment' },
-    { id: 'confirm', label: 'Confirm' },
+    { id: 'info', label: 'Your Details' },
+    { id: 'review', label: 'Review & Send' },
   ];
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Purchase vehicle">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Order vehicle">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up" style={{ background: 'var(--surface)' }}>
@@ -49,9 +42,9 @@ export default function CheckoutModal({ car, onClose }: Props) {
         <div className="px-6 py-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--border)', background: 'linear-gradient(135deg, #0f172a, #1e293b)' }}>
           <div>
             <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-jakarta)' }}>
-              Purchase Vehicle
+              Order Vehicle
             </h2>
-            <p className="text-xs text-slate-400">Secure checkout — SSL encrypted</p>
+            <p className="text-xs text-slate-400">Complete your order securely on WhatsApp</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-white/10 text-white/60 hover:text-white transition-colors" aria-label="Close checkout">
             <X size={18} />
@@ -59,13 +52,13 @@ export default function CheckoutModal({ car, onClose }: Props) {
         </div>
 
         {/* Step progress */}
-        {!done && (
+        {!sent && (
           <div className="px-6 pt-4 pb-2">
             <div className="flex items-center gap-2">
               {steps.map((s, i) => (
                 <div key={s.id} className="flex items-center gap-2 flex-1">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all ${step === s.id ? 'text-white scale-110' : steps.indexOf({ id: step, label: '' } as never) > i ? 'bg-emerald-500 text-white' : 'text-gray-400'}`}
-                    style={{ background: step === s.id ? 'var(--accent)' : undefined, border: step === s.id ? 'none' : '2px solid var(--border)' }}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all ${step === s.id ? 'text-white scale-110' : ''}`}
+                    style={{ background: step === s.id ? 'var(--accent)' : undefined, border: step === s.id ? 'none' : '2px solid var(--border)', color: step === s.id ? '#fff' : 'var(--muted)' }}>
                     {i + 1}
                   </div>
                   <span className="text-xs font-medium hidden sm:block" style={{ color: step === s.id ? 'var(--accent)' : 'var(--muted)' }}>
@@ -79,23 +72,26 @@ export default function CheckoutModal({ car, onClose }: Props) {
         )}
 
         <div className="p-6 max-h-[70vh] overflow-y-auto">
-          {done ? (
+          {sent ? (
             <div className="text-center py-6">
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(16,185,129,0.1)' }}>
-                <CheckCircle size={40} className="text-emerald-500" />
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(37,211,102,0.12)' }}>
+                <MessageCircle size={40} style={{ color: '#25D366' }} />
               </div>
-              <h3 className="text-2xl font-black mb-2" style={{ color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>Purchase Complete!</h3>
+              <h3 className="text-2xl font-black mb-2" style={{ color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>Order Sent!</h3>
               <p className="text-sm mb-2" style={{ color: 'var(--muted)' }}>
-                Congratulations on your new <strong>{car.year} {car.make} {car.model}</strong>!
+                Your order for the <strong>{car.year} {car.make} {car.model}</strong> has been opened in WhatsApp.
               </p>
               <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>
-                A confirmation email has been sent to <strong>{buyer.email || 'your inbox'}</strong>.
+                Just hit send in the chat and our team will reply with payment &amp; delivery details.
               </p>
               <div className="flex items-center justify-center gap-2 mb-6">
                 <ShieldCheck size={16} className="text-blue-500" />
                 <span className="text-xs text-blue-500 font-medium">2-Year Warranty Included</span>
               </div>
-              <button onClick={onClose} className="btn-primary justify-center">Done</button>
+              <div className="flex gap-3 justify-center">
+                <button onClick={handleSend} className="btn-outline justify-center text-sm">Reopen WhatsApp</button>
+                <button onClick={onClose} className="btn-primary justify-center">Done</button>
+              </div>
             </div>
           ) : (
             <>
@@ -132,111 +128,25 @@ export default function CheckoutModal({ car, onClose }: Props) {
                     </div>
                     <div className="relative">
                       <MapPin size={14} className="absolute left-3 top-3.5" style={{ color: 'var(--muted)' }} />
-                      <input required type="text" placeholder="ZIP code" value={buyer.zip} onChange={e => setBuyer({ ...buyer, zip: e.target.value })} className="input-field pl-9 text-sm" aria-label="ZIP code" />
+                      <input type="text" placeholder="City" value={buyer.city} onChange={e => setBuyer({ ...buyer, city: e.target.value })} className="input-field pl-9 text-sm" aria-label="City" />
                     </div>
                   </div>
                   <div className="relative">
-                    <MapPin size={14} className="absolute left-3 top-3.5" style={{ color: 'var(--muted)' }} />
-                    <input required type="text" placeholder="Delivery address" value={buyer.address} onChange={e => setBuyer({ ...buyer, address: e.target.value })} className="input-field pl-9 text-sm" aria-label="Delivery address" />
+                    <MessageSquare size={14} className="absolute left-3 top-3.5" style={{ color: 'var(--muted)' }} />
+                    <textarea placeholder="Notes for the seller (optional)" value={buyer.notes} onChange={e => setBuyer({ ...buyer, notes: e.target.value })} rows={2} className="input-field pl-9 text-sm resize-none" aria-label="Notes for the seller" />
                   </div>
                   <button
-                    onClick={() => setStep('payment')}
-                    disabled={!buyer.name || !buyer.email || !buyer.address}
+                    onClick={() => setStep('review')}
+                    disabled={!buyer.name || !buyer.email}
                     className="btn-primary w-full justify-center mt-2 disabled:opacity-50"
                   >
-                    Continue to Payment
+                    Review Order
                   </button>
                 </div>
               )}
 
-              {/* Step: Payment */}
-              {step === 'payment' && (
-                <div className="space-y-3">
-                  <h3 className="font-bold text-sm mb-3" style={{ color: 'var(--text)' }}>Payment Details</h3>
-
-                  {/* Card mockup */}
-                  <div className="relative h-44 rounded-2xl overflow-hidden p-5 mb-4"
-                    style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #312e81 50%, #0f172a 100%)' }}>
-                    <div className="absolute top-0 right-0 w-40 h-40 rounded-full opacity-10" style={{ background: 'white', transform: 'translate(30%, -30%)' }} />
-                    <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full opacity-10" style={{ background: 'white', transform: 'translate(-20%, 20%)' }} />
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-10 h-7 rounded-md bg-yellow-400/80" style={{ background: 'linear-gradient(135deg, #fbbf24, #f59e0b)' }} />
-                      <span className="text-white/60 text-xs font-medium">VISA</span>
-                    </div>
-                    <p className="text-white font-mono text-lg tracking-[0.2em] mb-3">
-                      {card.number || '•••• •••• •••• ••••'}
-                    </p>
-                    <div className="flex justify-between">
-                      <div>
-                        <p className="text-white/50 text-xs mb-0.5">CARD HOLDER</p>
-                        <p className="text-white text-sm font-medium">{card.name || 'YOUR NAME'}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-white/50 text-xs mb-0.5">EXPIRES</p>
-                        <p className="text-white text-sm font-medium">{card.expiry || 'MM/YY'}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="relative">
-                    <CreditCard size={14} className="absolute left-3 top-3.5" style={{ color: 'var(--muted)' }} />
-                    <input
-                      type="text"
-                      placeholder="Card number"
-                      value={card.number}
-                      onChange={e => setCard({ ...card, number: formatCardNumber(e.target.value) })}
-                      className="input-field pl-9 text-sm font-mono"
-                      maxLength={19}
-                      aria-label="Card number"
-                    />
-                  </div>
-                  <div className="relative">
-                    <User size={14} className="absolute left-3 top-3.5" style={{ color: 'var(--muted)' }} />
-                    <input
-                      type="text"
-                      placeholder="Cardholder name"
-                      value={card.name}
-                      onChange={e => setCard({ ...card, name: e.target.value.toUpperCase() })}
-                      className="input-field pl-9 text-sm"
-                      aria-label="Cardholder name"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="MM/YY"
-                      value={card.expiry}
-                      onChange={e => setCard({ ...card, expiry: formatExpiry(e.target.value) })}
-                      className="input-field text-sm"
-                      maxLength={5}
-                      aria-label="Expiry date"
-                    />
-                    <div className="relative">
-                      <Lock size={14} className="absolute left-3 top-3.5" style={{ color: 'var(--muted)' }} />
-                      <input
-                        type="password"
-                        placeholder="CVV"
-                        value={card.cvv}
-                        onChange={e => setCard({ ...card, cvv: e.target.value.slice(0, 3) })}
-                        className="input-field pl-9 text-sm"
-                        maxLength={3}
-                        aria-label="CVV"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 py-2 px-3 rounded-xl text-xs" style={{ background: 'rgba(16,185,129,0.08)', color: '#10b981' }}>
-                    <Lock size={13} />
-                    Your payment information is encrypted and secure. No actual charges are made.
-                  </div>
-                  <div className="flex gap-3">
-                    <button onClick={() => setStep('info')} className="btn-outline flex-1 justify-center text-sm">Back</button>
-                    <button onClick={() => setStep('confirm')} className="btn-primary flex-1 justify-center">Review Order</button>
-                  </div>
-                </div>
-              )}
-
-              {/* Step: Confirm */}
-              {step === 'confirm' && (
+              {/* Step: Review */}
+              {step === 'review' && (
                 <div className="space-y-4">
                   <h3 className="font-bold text-sm mb-3" style={{ color: 'var(--text)' }}>Review Your Order</h3>
                   <div className="space-y-2 text-sm">
@@ -245,12 +155,12 @@ export default function CheckoutModal({ car, onClose }: Props) {
                       ['Condition', car.condition],
                       ['Buyer', buyer.name],
                       ['Email', buyer.email],
-                      ['Delivery', buyer.address || 'N/A'],
-                      ['Payment', `•••• ${card.number.slice(-4) || '••••'}`],
+                      ['Phone', buyer.phone || 'N/A'],
+                      ['City', buyer.city || 'N/A'],
                     ].map(([label, value]) => (
                       <div key={label} className="flex justify-between py-1.5 border-b" style={{ borderColor: 'var(--border)' }}>
                         <span style={{ color: 'var(--muted)' }}>{label}</span>
-                        <span className="font-medium" style={{ color: 'var(--text)' }}>{value}</span>
+                        <span className="font-medium text-right" style={{ color: 'var(--text)' }}>{value}</span>
                       </div>
                     ))}
                     <div className="flex justify-between py-1.5">
@@ -266,21 +176,20 @@ export default function CheckoutModal({ car, onClose }: Props) {
                       <span className="text-xl font-black" style={{ color: 'var(--accent)' }}>{formatPrice(total)}</span>
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-2 py-2 px-3 rounded-xl text-xs" style={{ background: 'rgba(37,211,102,0.08)', color: '#128C3E' }}>
+                    <MessageCircle size={14} />
+                    We&apos;ll send your order to our team on WhatsApp to arrange payment &amp; delivery.
+                  </div>
+
                   <div className="flex gap-3">
-                    <button onClick={() => setStep('payment')} className="btn-outline flex-1 justify-center text-sm">Back</button>
+                    <button onClick={() => setStep('info')} className="btn-outline flex-1 justify-center text-sm">Back</button>
                     <button
-                      onClick={handleConfirm}
-                      disabled={loading}
-                      className="btn-primary flex-1 justify-center disabled:opacity-70"
+                      onClick={handleSend}
+                      className="flex-1 justify-center inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-semibold text-white transition-transform hover:-translate-y-0.5"
+                      style={{ background: '#25D366' }}
                     >
-                      {loading ? (
-                        <span className="flex items-center gap-2">
-                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          Processing...
-                        </span>
-                      ) : (
-                        <><Lock size={14} /> Confirm Purchase</>
-                      )}
+                      <MessageCircle size={16} /> Order on WhatsApp
                     </button>
                   </div>
                 </div>

@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import FilterSidebar from '@/components/cars/FilterSidebar';
+import FilterSidebar, { FilterDrawer, activeFilterCount } from '@/components/cars/FilterSidebar';
 import SortDropdown from '@/components/cars/SortDropdown';
 import CarCard from '@/components/cars/CarCard';
 import CarCompareBar from '@/components/ui/CarCompareBar';
@@ -14,7 +14,7 @@ import { useCompare } from '@/hooks/useCompare';
 import { useToast } from '@/hooks/useToast';
 import { cars } from '@/lib/data';
 import { FilterState, SortOption } from '@/lib/types';
-import { FilterX } from 'lucide-react';
+import { FilterX, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
 
 function CarsContent() {
@@ -33,15 +33,23 @@ function CarsContent() {
     fuelTypes: initFuel ? [initFuel] : [],
     transmissions: [],
     seats: [],
-    yearMin: 2015,
+    yearMin: 1960,
     yearMax: 2025,
     conditions: initCondition ? [initCondition] : [],
+    categories: initCategory ? [initCategory] : [],
     search: initSearch,
   });
 
   const [sort, setSort] = useState<SortOption>('year-desc');
   const [page, setPage] = useState(1);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const itemsPerPage = 6;
+
+  const resetFilters = () => setFilters({
+    priceMin: 0, priceMax: 150000, makes: [], fuelTypes: [],
+    transmissions: [], seats: [], yearMin: 1960, yearMax: 2025,
+    conditions: [], categories: [], search: '',
+  });
 
   const { isFavorite, toggle, favorites } = useFavorites();
   const { compareList, isInCompare, addToCompare, removeFromCompare, clearCompare } = useCompare();
@@ -71,11 +79,18 @@ function CarsContent() {
     setPage(1);
   }, [filters, sort]);
 
+  // Lock body scroll while the mobile filter drawer is open
+  useEffect(() => {
+    if (!drawerOpen) return;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, [drawerOpen]);
+
   // Filtering
   const filtered = cars.filter(car => {
     if (showFavs && !favorites.includes(car.id)) return false;
-    if (initCategory && car.category !== initCategory) return false;
-    
+    if (filters.categories.length > 0 && !filters.categories.includes(car.category)) return false;
+
     if (filters.search) {
       const q = filters.search.toLowerCase();
       if (!car.make.toLowerCase().includes(q) && !car.model.toLowerCase().includes(q)) return false;
@@ -107,19 +122,16 @@ function CarsContent() {
 
   const paginated = sorted.slice((page - 1) * itemsPerPage, page * itemsPerPage);
   const totalPages = Math.ceil(sorted.length / itemsPerPage);
+  const activeCount = activeFilterCount(filters);
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 py-8">
-      {/* Sidebar */}
-      <div className="w-full lg:w-72 flex-shrink-0">
+      {/* Sidebar — desktop only */}
+      <div className="hidden lg:block w-72 flex-shrink-0">
         <FilterSidebar
           filters={filters}
           onChange={setFilters}
-          onReset={() => setFilters({
-            priceMin: 0, priceMax: 150000, makes: [], fuelTypes: [],
-            transmissions: [], seats: [], yearMin: 2015, yearMax: 2025,
-            conditions: [], search: ''
-          })}
+          onReset={resetFilters}
         />
       </div>
 
@@ -129,13 +141,30 @@ function CarsContent() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
           <div>
             <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
-              {showFavs ? 'Your Favorites' : initCategory ? `${initCategory} Vehicles` : 'All Vehicles'}
+              {showFavs ? 'Your Favorites' : filters.categories.length === 1 ? `${filters.categories[0]} Vehicles` : 'All Vehicles'}
             </h1>
             <p className="text-sm" style={{ color: 'var(--muted)' }}>
               Showing {sorted.length} {sorted.length === 1 ? 'vehicle' : 'vehicles'}
             </p>
           </div>
-          <SortDropdown value={sort} onChange={setSort} />
+          <div className="flex items-center gap-3">
+            {/* Mobile filter trigger */}
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="lg:hidden inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors"
+              style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
+              aria-label="Open filters"
+            >
+              <SlidersHorizontal size={15} />
+              Filters
+              {activeCount > 0 && (
+                <span className="min-w-5 h-5 px-1.5 rounded-full text-[11px] font-bold flex items-center justify-center text-white" style={{ background: 'var(--ink)' }}>
+                  {activeCount}
+                </span>
+              )}
+            </button>
+            <SortDropdown value={sort} onChange={setSort} />
+          </div>
         </div>
 
         {/* Breadcrumb */}
@@ -213,6 +242,15 @@ function CarsContent() {
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />
       <CarCompareBar compareList={compareList} removeFromCompare={removeFromCompare} clearCompare={clearCompare} />
+
+      <FilterDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        filters={filters}
+        onChange={setFilters}
+        onReset={resetFilters}
+        resultCount={sorted.length}
+      />
     </div>
   );
 }
