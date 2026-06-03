@@ -31,6 +31,7 @@ export interface Car {
   color: string;
   category: string;
   badge?: string;
+  isVault?: boolean;
 }
 
 export interface FilterState {
@@ -44,6 +45,7 @@ export interface FilterState {
   yearMax: number;
   conditions: string[];
   categories: string[];
+  vaultOnly: boolean;
   search: string;
 }
 

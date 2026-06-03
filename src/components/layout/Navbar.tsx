@@ -2,11 +2,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, User, Globe, HelpCircle } from 'lucide-react';
+import { Menu, X, User, Globe, HelpCircle, Crown } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
+import UserToggle from './UserToggle';
 
 const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Listings', href: '/cars' },
+  { label: 'Pricing', href: '/pricing' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
 ];
@@ -15,6 +18,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const { isPremium, hydrated } = useUser();
 
   // Transparent overlay only on the home hero; solid everywhere else / on scroll.
   const transparent = pathname === '/' && !scrolled;
@@ -57,16 +61,17 @@ export default function Navbar() {
         </div>
 
         {/* Right actions */}
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-5">
           <button aria-label="Help" className={`transition-colors ${link}`}>
             <HelpCircle size={18} />
           </button>
           <button aria-label="Language" className={`transition-colors ${link}`}>
             <Globe size={18} />
           </button>
+          <UserToggle />
           <button className={`flex items-center gap-2 text-[0.9rem] font-medium transition-colors ${link}`}>
-            <User size={18} />
-            Sign in
+            {hydrated && isPremium ? <Crown size={18} style={{ color: 'var(--gold)' }} /> : <User size={18} />}
+            {hydrated && isPremium ? 'Member' : 'Sign in'}
           </button>
         </div>
 
@@ -95,8 +100,13 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+            <div className="mt-3 mb-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-2">View as</p>
+              <UserToggle compact />
+            </div>
             <button className="mt-2 py-2.5 text-left text-sm font-medium text-gray-700 flex items-center gap-2">
-              <User size={16} /> Sign in
+              {hydrated && isPremium ? <Crown size={16} style={{ color: 'var(--gold)' }} /> : <User size={16} />}
+              {hydrated && isPremium ? 'Premium Member' : 'Sign in'}
             </button>
           </div>
         </div>

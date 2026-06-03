@@ -1,9 +1,10 @@
 'use client';
 import { Car } from '@/lib/types';
 import { formatPrice, formatMileage } from '@/lib/utils';
-import { Heart, MapPin, Star, BarChart2, Eye } from 'lucide-react';
+import { Heart, MapPin, Star, BarChart2, Eye, Lock, Crown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUser } from '@/context/UserContext';
 
 interface CarCardProps {
   car: Car;
@@ -29,6 +30,9 @@ export default function CarCard({
   onAddToCompare,
   onRemoveFromCompare,
 }: CarCardProps) {
+  const { isPremium, hydrated, openSubscribe } = useUser();
+  const locked = !!car.isVault && !(hydrated && isPremium);
+
   return (
     <article className="card group" aria-label={`${car.year} ${car.make} ${car.model}`}>
       {/* Image */}
@@ -37,7 +41,7 @@ export default function CarCard({
           src={car.image}
           alt={`${car.year} ${car.make} ${car.model}`}
           fill
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
+          className={`object-cover transition-transform duration-700 ${locked ? 'blur-md scale-110' : 'group-hover:scale-110'}`}
           loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
@@ -46,7 +50,11 @@ export default function CarCard({
 
         {/* Top badges */}
         <div className="absolute top-3 left-3 flex gap-1.5">
-          {car.badge ? (
+          {car.isVault ? (
+            <span className="badge badge-gold inline-flex items-center gap-1">
+              <Lock size={11} /> Premium
+            </span>
+          ) : car.badge ? (
             <span className="badge text-white" style={{ background: 'var(--ink)' }}>
               {car.badge}
             </span>
@@ -56,6 +64,15 @@ export default function CarCard({
             </span>
           )}
         </div>
+
+        {/* Locked vault overlay */}
+        {locked && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-sm" style={{ background: 'rgba(var(--gold-rgb),0.2)', border: '1px solid var(--vault-border)' }}>
+              <Lock size={20} style={{ color: 'var(--gold)' }} />
+            </div>
+          </div>
+        )}
 
         {/* Favorite button */}
         <button
@@ -114,7 +131,7 @@ export default function CarCard({
           <div>
             <p className="text-[11px] leading-none mb-1" style={{ color: 'var(--muted)' }}>Price</p>
             <p className="text-xl font-semibold leading-none" style={{ color: 'var(--text)' }}>
-              {formatPrice(car.price)}
+              {locked ? '???' : formatPrice(car.price)}
             </p>
           </div>
           <div className="flex gap-2">
@@ -133,14 +150,25 @@ export default function CarCard({
             >
               <BarChart2 size={16} />
             </button>
-            <Link
-              href={`/cars/${car.id}`}
-              className="btn-primary text-sm py-2.5 px-5"
-              aria-label={`View details for ${car.make} ${car.model}`}
-            >
-              <Eye size={14} />
-              Details
-            </Link>
+            {locked ? (
+              <button
+                onClick={openSubscribe}
+                className="btn-gold text-sm py-2.5 px-5"
+                aria-label={`Unlock ${car.make} ${car.model} with Premium`}
+              >
+                <Crown size={14} />
+                Unlock
+              </button>
+            ) : (
+              <Link
+                href={`/cars/${car.id}`}
+                className="btn-primary text-sm py-2.5 px-5"
+                aria-label={`View details for ${car.make} ${car.model}`}
+              >
+                <Eye size={14} />
+                Details
+              </Link>
+            )}
           </div>
         </div>
       </div>

@@ -29,6 +29,7 @@ export const cars: Car[] = [
     color: 'Brooklyn Grey',
     category: 'Luxury',
     badge: 'New Arrival',
+    isVault: true,
   },
   {
     id: '2',
@@ -116,6 +117,7 @@ export const cars: Car[] = [
     color: 'Obsidian Black',
     category: 'Luxury',
     badge: 'Hot Deal',
+    isVault: true,
   },
   {
     id: '5',
@@ -371,6 +373,7 @@ export const cars: Car[] = [
     color: 'Tanzanite Blue',
     category: 'Luxury',
     badge: 'Hot Deal',
+    isVault: true,
   },
   {
     id: '14',
@@ -457,6 +460,7 @@ export const cars: Car[] = [
     color: 'Highland Green',
     category: 'Vintage',
     badge: 'Collector',
+    isVault: true,
   },
   {
     id: '17',
@@ -515,6 +519,7 @@ export const cars: Car[] = [
     color: 'Signal Yellow',
     category: 'Vintage',
     badge: 'Collector',
+    isVault: true,
   },
   {
     id: '19',

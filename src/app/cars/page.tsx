@@ -24,6 +24,7 @@ function CarsContent() {
   const initMake = searchParams.get('make') || '';
   const initCondition = searchParams.get('condition') || '';
   const initFuel = searchParams.get('fuel') || '';
+  const initVault = searchParams.get('vault') === '1';
   const showFavs = searchParams.get('favorites') === 'true';
 
   const [filters, setFilters] = useState<FilterState>({
@@ -37,6 +38,7 @@ function CarsContent() {
     yearMax: 2025,
     conditions: initCondition ? [initCondition] : [],
     categories: initCategory ? [initCategory] : [],
+    vaultOnly: initVault,
     search: initSearch,
   });
 
@@ -48,7 +50,7 @@ function CarsContent() {
   const resetFilters = () => setFilters({
     priceMin: 0, priceMax: 150000, makes: [], fuelTypes: [],
     transmissions: [], seats: [], yearMin: 1960, yearMax: 2025,
-    conditions: [], categories: [], search: '',
+    conditions: [], categories: [], vaultOnly: false, search: '',
   });
 
   const { isFavorite, toggle, favorites } = useFavorites();
@@ -89,6 +91,7 @@ function CarsContent() {
   // Filtering
   const filtered = cars.filter(car => {
     if (showFavs && !favorites.includes(car.id)) return false;
+    if (filters.vaultOnly && !car.isVault) return false;
     if (filters.categories.length > 0 && !filters.categories.includes(car.category)) return false;
 
     if (filters.search) {

@@ -10,6 +10,7 @@ const footerLinks = {
   ],
   QuickLinks: [
     { label: 'Get in Touch', href: '/contact' },
+    { label: 'Premium Vault', href: '/pricing' },
     { label: 'Help Center', href: '/help' },
     { label: 'Live Chat', href: '/chat' },
     { label: 'How it Works', href: '/how-it-works' },

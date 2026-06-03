@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { FilterState } from '@/lib/types';
 import { categoryList } from '@/lib/data';
-import { ChevronDown, Check, X } from 'lucide-react';
+import { ChevronDown, Check, X, Crown } from 'lucide-react';
 
 interface FilterSidebarProps {
   filters: FilterState;
@@ -23,10 +23,37 @@ const YEAR_MAX = 2025;
 /** Count of active (non-default) filters — shared by the desktop sidebar and the mobile trigger. */
 export function activeFilterCount(filters: FilterState): number {
   return (
+    (filters.vaultOnly ? 1 : 0) +
     filters.categories.length + filters.makes.length + filters.fuelTypes.length +
     filters.transmissions.length + filters.seats.length + filters.conditions.length +
     (filters.priceMin > 0 || filters.priceMax < PRICE_MAX ? 1 : 0) +
     (filters.yearMin > YEAR_MIN || filters.yearMax < YEAR_MAX ? 1 : 0)
+  );
+}
+
+/** Gold pill toggle for "Show Vault Cars Only". */
+function VaultToggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      onClick={() => onChange(!on)}
+      role="switch"
+      aria-checked={on}
+      className="flex items-center justify-between w-full py-4 group"
+    >
+      <span className="flex items-center gap-2 text-[0.8rem] font-semibold uppercase tracking-[0.08em]" style={{ color: on ? 'var(--gold)' : 'var(--text)' }}>
+        <Crown size={14} style={{ color: 'var(--gold)' }} />
+        Vault Cars Only
+      </span>
+      <span
+        className="relative w-10 h-6 rounded-full transition-colors flex-shrink-0"
+        style={{ background: on ? 'var(--gold)' : 'var(--border)' }}
+      >
+        <span
+          className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform"
+          style={{ transform: on ? 'translateX(16px)' : 'translateX(0)' }}
+        />
+      </span>
+    </button>
   );
 }
 
@@ -155,6 +182,10 @@ function RangeSlider({ min, max, step = 1, valueMin, valueMax, onMin, onMax, lab
 function FilterControls({ filters, onChange }: { filters: FilterState; onChange: (f: FilterState) => void }) {
   return (
     <>
+      <div className="border-b border-[var(--border)]">
+        <VaultToggle on={filters.vaultOnly} onChange={v => onChange({ ...filters, vaultOnly: v })} />
+      </div>
+
       <Section title="Category" count={filters.categories.length}>
         <PillGroup options={categoryList} selected={filters.categories} onChange={val => onChange({ ...filters, categories: val })} />
       </Section>
