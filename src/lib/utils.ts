@@ -20,6 +20,14 @@ export function estimateShipping(price: number): number {
   return 1799;
 }
 
+// Optional safety-certification add-on for used cars: a 150-point inspection plus
+// a certified warranty. New/Certified cars already qualify; salvage is sold as-is.
+export const SAFETY_CERT_FEE = 750;
+
+export function canCertify(condition: string): boolean {
+  return condition === 'Used';
+}
+
 export function getRatingStars(rating: number): string {
   const full = Math.floor(rating);
   const half = rating % 1 >= 0.5 ? 1 : 0;

@@ -1,11 +1,12 @@
 'use client';
 import { Truck, ShieldCheck, BadgeCheck } from 'lucide-react';
 import { Car } from '@/lib/types';
-import { formatPrice, estimateShipping } from '@/lib/utils';
+import { formatPrice, estimateShipping, SAFETY_CERT_FEE, canCertify } from '@/lib/utils';
 
 export default function PriceSummary({ car }: { car: Car }) {
   const shipping = estimateShipping(car.price);
   const total = car.price + shipping;
+  const certifiable = canCertify(car.condition);
 
   return (
     <section
@@ -56,6 +57,15 @@ export default function PriceSummary({ car }: { car: Car }) {
           </div>
         ))}
       </div>
+
+      {certifiable && (
+        <div className="mt-4 flex items-start gap-2.5 rounded-xl p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+          <ShieldCheck size={16} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>
+            <span className="font-semibold" style={{ color: 'var(--text)' }}>Optional safety certification</span> — add a 150-point inspection &amp; certified warranty at checkout for {formatPrice(SAFETY_CERT_FEE)}, or buy as-is.
+          </p>
+        </div>
+      )}
 
       <p className="text-xs mt-4" style={{ color: 'var(--muted)' }}>
         * Estimated shipping. Final cost is confirmed at checkout based on your delivery address.

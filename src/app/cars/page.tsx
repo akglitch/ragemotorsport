@@ -12,7 +12,7 @@ import BackToTop from '@/components/ui/BackToTop';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useCompare } from '@/hooks/useCompare';
 import { useToast } from '@/hooks/useToast';
-import { cars } from '@/lib/data';
+import { useAllCars } from '@/hooks/useAllCars';
 import { FilterState, SortOption } from '@/lib/types';
 import { FilterX, SlidersHorizontal } from 'lucide-react';
 import Link from 'next/link';
@@ -53,6 +53,7 @@ function CarsContent() {
     conditions: [], categories: [], vaultOnly: false, search: '',
   });
 
+  const { cars } = useAllCars();
   const { isFavorite, toggle, favorites } = useFavorites();
   const { compareList, isInCompare, addToCompare, removeFromCompare, clearCompare } = useCompare();
   const { toasts, addToast, removeToast } = useToast();

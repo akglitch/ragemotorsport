@@ -1,5 +1,5 @@
 import { Car } from './types';
-import { formatPrice, estimateShipping } from './utils';
+import { formatPrice, estimateShipping, SAFETY_CERT_FEE, canCertify } from './utils';
 
 /**
  * RageMotorSport business contact.
@@ -59,14 +59,24 @@ export interface OrderBuyer {
   notes?: string;
 }
 
+/** Optional order extras captured by the checkout flow. */
+export interface OrderOptions {
+  /** Buyer chose the paid safety-certification add-on (only valid for used cars). */
+  certified?: boolean;
+  /** Listing URL to include in the message. */
+  url?: string;
+}
+
 /**
- * Prefilled order message for the WhatsApp checkout. Bundles the vehicle and
- * the buyer's contact details into one message so the handler can reply with
- * payment + delivery instructions.
+ * Prefilled order message for the WhatsApp checkout. Bundles the vehicle, the
+ * buyer's contact details, and any add-ons (safety certification) into one
+ * message so the handler can reply with payment + delivery instructions.
  */
-export function carOrderLink(car: Car, buyer: OrderBuyer, url?: string): string {
+export function carOrderLink(car: Car, buyer: OrderBuyer, opts: OrderOptions = {}): string {
   const shipping = estimateShipping(car.price);
-  const total = car.price + shipping;
+  const certified = !!opts.certified && canCertify(car.condition);
+  const certFee = certified ? SAFETY_CERT_FEE : 0;
+  const total = car.price + shipping + certFee;
   const lines = [
     `Hi ${BUSINESS.name}! 👋`,
     ``,
@@ -75,8 +85,11 @@ export function carOrderLink(car: Car, buyer: OrderBuyer, url?: string): string 
     `• Condition: ${car.condition}`,
     `• Price: ${formatPrice(car.price)}`,
     `• Shipping: ${formatPrice(shipping)}`,
+    canCertify(car.condition)
+      ? `• Safety certification: ${certified ? `Yes (+${formatPrice(SAFETY_CERT_FEE)})` : 'No — buying as-is'}`
+      : undefined,
     `• Total: ${formatPrice(total)}`,
-    url ? `\n${url}` : ``,
+    opts.url ? `\n${opts.url}` : ``,
     ``,
     `My details:`,
     `• Name: ${buyer.name}`,

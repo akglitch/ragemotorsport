@@ -2,7 +2,7 @@
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { cars } from '@/lib/data';
+import { useAllCars } from '@/hooks/useAllCars';
 import { formatPrice, formatMileage } from '@/lib/utils';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -31,6 +31,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => { setMounted(true); }, []);
 
+  const { cars, loaded } = useAllCars();
   const { isFavorite, toggle } = useFavorites();
   const { compareList, isInCompare, addToCompare, removeFromCompare, clearCompare } = useCompare();
   const { toasts, addToast, removeToast } = useToast();
@@ -39,6 +40,20 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   if (!mounted) return null; // Avoid hydration mismatch on favorites
 
   const car = cars.find(c => c.id === id);
+
+  // Admin-created cars load from the store after mount — wait before 404-ing.
+  if (!car && !loaded) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center pt-16">
+          <div className="w-8 h-8 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (!car) {
     return (
       <div className="min-h-screen flex flex-col">

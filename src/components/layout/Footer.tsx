@@ -26,6 +26,7 @@ const footerLinks = {
     { label: 'SUV', href: '/cars?category=SUV' },
     { label: 'Electric', href: '/cars?category=Electric' },
     { label: 'Luxury', href: '/cars?category=Luxury' },
+    { label: 'Classics', href: '/cars?category=Vintage' },
   ],
 };
 

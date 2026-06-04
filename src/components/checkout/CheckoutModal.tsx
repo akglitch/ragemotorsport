@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
-import { X, User, Mail, Phone, MapPin, MessageSquare, ShieldCheck, MessageCircle } from 'lucide-react';
+import { X, User, Mail, Phone, MapPin, MessageSquare, ShieldCheck, MessageCircle, Check } from 'lucide-react';
 import { Car } from '@/lib/types';
-import { formatPrice, estimateShipping } from '@/lib/utils';
+import { formatPrice, estimateShipping, SAFETY_CERT_FEE, canCertify } from '@/lib/utils';
 import { carOrderLink, OrderBuyer } from '@/lib/config';
 import Image from 'next/image';
 
@@ -18,13 +18,16 @@ export default function CheckoutModal({ car, onClose }: Props) {
   const [sent, setSent] = useState(false);
 
   const [buyer, setBuyer] = useState<OrderBuyer>({ name: '', email: '', phone: '', city: '', notes: '' });
+  const [certified, setCertified] = useState(false);
 
+  const certifiable = canCertify(car.condition);
+  const certFee = certifiable && certified ? SAFETY_CERT_FEE : 0;
   const shipping = estimateShipping(car.price);
-  const total = car.price + shipping;
+  const total = car.price + shipping + certFee;
 
   const handleSend = () => {
     const url = typeof window !== 'undefined' ? window.location.href : undefined;
-    window.open(carOrderLink(car, buyer, url), '_blank', 'noopener,noreferrer');
+    window.open(carOrderLink(car, buyer, { certified, url }), '_blank', 'noopener,noreferrer');
     setSent(true);
   };
 
@@ -135,6 +138,47 @@ export default function CheckoutModal({ car, onClose }: Props) {
                     <MessageSquare size={14} className="absolute left-3 top-3.5" style={{ color: 'var(--muted)' }} />
                     <textarea placeholder="Notes for the seller (optional)" value={buyer.notes} onChange={e => setBuyer({ ...buyer, notes: e.target.value })} rows={2} className="input-field pl-9 text-sm resize-none" aria-label="Notes for the seller" />
                   </div>
+
+                  {/* Safety certification (used cars only) */}
+                  {certifiable && (
+                    <div className="pt-1">
+                      <h3 className="font-bold text-sm mb-2" style={{ color: 'var(--text)' }}>Safety Certification</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setCertified(true)}
+                          aria-pressed={certified}
+                          className="text-left p-3 rounded-xl border transition-all"
+                          style={{ borderColor: certified ? 'var(--accent)' : 'var(--border)', background: certified ? 'rgba(var(--accent-rgb),0.06)' : 'var(--surface)', boxShadow: certified ? '0 0 0 1px var(--accent)' : 'none' }}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="flex items-center gap-1.5 font-semibold text-sm" style={{ color: 'var(--text)' }}>
+                              <ShieldCheck size={15} className="text-emerald-500" /> Safety Certified
+                            </span>
+                            {certified && <Check size={15} style={{ color: 'var(--accent)' }} />}
+                          </div>
+                          <p className="text-xs mb-1" style={{ color: 'var(--muted)' }}>150-point inspection + certified warranty</p>
+                          <p className="text-sm font-bold" style={{ color: 'var(--accent)' }}>+{formatPrice(SAFETY_CERT_FEE)}</p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setCertified(false)}
+                          aria-pressed={!certified}
+                          className="text-left p-3 rounded-xl border transition-all"
+                          style={{ borderColor: !certified ? 'var(--accent)' : 'var(--border)', background: !certified ? 'rgba(var(--accent-rgb),0.06)' : 'var(--surface)', boxShadow: !certified ? '0 0 0 1px var(--accent)' : 'none' }}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-sm" style={{ color: 'var(--text)' }}>Buy As-Is</span>
+                            {!certified && <Check size={15} style={{ color: 'var(--accent)' }} />}
+                          </div>
+                          <p className="text-xs mb-1" style={{ color: 'var(--muted)' }}>Sold as-is — inspect it yourself</p>
+                          <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>No extra cost</p>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     onClick={() => setStep('review')}
                     disabled={!buyer.name || !buyer.email}
@@ -153,6 +197,7 @@ export default function CheckoutModal({ car, onClose }: Props) {
                     {[
                       ['Vehicle', `${car.year} ${car.make} ${car.model}`],
                       ['Condition', car.condition],
+                      ...(certifiable ? [['Certification', certified ? 'Safety Certified' : 'Buy as-is'] as [string, string]] : []),
                       ['Buyer', buyer.name],
                       ['Email', buyer.email],
                       ['Phone', buyer.phone || 'N/A'],
@@ -167,10 +212,18 @@ export default function CheckoutModal({ car, onClose }: Props) {
                       <span style={{ color: 'var(--muted)' }}>Vehicle price</span>
                       <span className="font-medium" style={{ color: 'var(--text)' }}>{formatPrice(car.price)}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <div className={`flex justify-between py-1.5 ${certifiable && certified ? '' : 'border-b'}`} style={{ borderColor: 'var(--border)' }}>
                       <span style={{ color: 'var(--muted)' }}>Shipping &amp; delivery</span>
                       <span className="font-medium" style={{ color: 'var(--text)' }}>{formatPrice(shipping)}</span>
                     </div>
+                    {certifiable && certified && (
+                      <div className="flex justify-between py-1.5 border-b" style={{ borderColor: 'var(--border)' }}>
+                        <span className="flex items-center gap-1.5" style={{ color: 'var(--muted)' }}>
+                          <ShieldCheck size={13} className="text-emerald-500" /> Safety certification
+                        </span>
+                        <span className="font-medium" style={{ color: 'var(--text)' }}>{formatPrice(SAFETY_CERT_FEE)}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between py-2">
                       <span className="font-bold" style={{ color: 'var(--text)' }}>Total Due</span>
                       <span className="text-xl font-black" style={{ color: 'var(--accent)' }}>{formatPrice(total)}</span>

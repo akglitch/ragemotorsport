@@ -1,6 +1,7 @@
 import Hero from '@/components/home/Hero';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import FeaturedListings from '@/components/home/FeaturedListings';
+import ClassicsSection from '@/components/home/ClassicsSection';
 import PremiumVault from '@/components/home/PremiumVault';
 import WhyChooseUs from '@/components/home/WhyChooseUs';
 import Newsletter from '@/components/home/Newsletter';
@@ -16,6 +17,7 @@ export default function Home() {
         <Hero />
         <CategoryGrid />
         <FeaturedListings />
+        <ClassicsSection />
         <PremiumVault />
         <WhyChooseUs />
         <Newsletter />
