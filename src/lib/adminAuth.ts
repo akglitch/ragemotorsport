@@ -1,43 +1,50 @@
+'use client';
+import { createClient } from '@/lib/supabase/client';
+
 /**
- * Admin auth seam — a simple password gate for the demo.
+ * Admin auth — backed by Supabase Auth (email/password).
  *
- * The password comes from NEXT_PUBLIC_ADMIN_PASSWORD (falls back to a dev
- * default). Access is remembered for the tab via sessionStorage.
- *
- * NOTE: this is NOT real security — NEXT_PUBLIC_* values ship to the browser.
- * TODO(supabase-auth): replace with Supabase Auth (email/password or magic link)
- * and protect the /admin routes with a server check / middleware.
+ * Create the admin user once in the Supabase dashboard
+ * (Authentication → Users → Add user). Writes to the `cars` table are enforced
+ * server-side by RLS + the session, so this is real access control, not a demo
+ * gate.
  */
 
-const SESSION_KEY = 'rage-admin-session';
-const DEV_FALLBACK = 'rage-admin';
-
-export function adminPassword(): string {
-  return process.env.NEXT_PUBLIC_ADMIN_PASSWORD || DEV_FALLBACK;
+export interface AuthResult {
+  ok: boolean;
+  error?: string;
 }
 
-export function isAuthed(): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    return sessionStorage.getItem(SESSION_KEY) === 'ok';
-  } catch {
-    return false;
-  }
+/** True if there is a current Supabase session. */
+export async function isAuthed(): Promise<boolean> {
+  const supabase = createClient();
+  const { data } = await supabase.auth.getSession();
+  return !!data.session;
 }
 
-/** Returns true on success. */
-export function login(password: string): boolean {
-  const ok = password === adminPassword();
-  if (ok) {
-    try {
-      sessionStorage.setItem(SESSION_KEY, 'ok');
-    } catch {}
-  }
-  return ok;
+/** The signed-in admin's email, if any. */
+export async function currentEmail(): Promise<string | null> {
+  const supabase = createClient();
+  const { data } = await supabase.auth.getUser();
+  return data.user?.email ?? null;
 }
 
-export function logout(): void {
-  try {
-    sessionStorage.removeItem(SESSION_KEY);
-  } catch {}
+export async function login(email: string, password: string): Promise<AuthResult> {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  return error ? { ok: false, error: error.message } : { ok: true };
+}
+
+export async function logout(): Promise<void> {
+  const supabase = createClient();
+  await supabase.auth.signOut();
+}
+
+/** Subscribe to sign-in/out; returns an unsubscribe function. */
+export function onAuthChange(cb: (authed: boolean) => void): () => void {
+  const supabase = createClient();
+  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    cb(!!session);
+  });
+  return () => data.subscription.unsubscribe();
 }

@@ -1,18 +1,13 @@
 'use client';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ExternalLink, LogOut } from 'lucide-react';
 import { logout } from '@/lib/adminAuth';
 
 /** Chrome shown around every admin page once authenticated. */
 export default function AdminShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-
-  const handleLogout = () => {
-    logout();
-    router.refresh();
-    // Re-render the gate immediately.
-    if (typeof window !== 'undefined') window.location.reload();
+  const handleLogout = async () => {
+    await logout();
+    // AdminGate's onAuthChange subscription flips back to the login screen.
   };
 
   return (

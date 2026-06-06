@@ -1,29 +1,14 @@
 /**
- * Image upload seam.
+ * Image upload seam — posts the file to our signed Cloudinary route.
  *
- * Today this reads the selected file into a base-64 data URL on the client, so
- * the admin previews and persists images with no backend. It returns a string
- * that drops straight into `Car.image` / `Car.images[]` and renders in
- * <next/image>.
- *
- * ───────────────────────────────────────────────────────────────────────────
- * TODO(cloudinary): replace the body with an unsigned upload. Nothing else in
- * the app calls Cloudinary — only this function — so this is the single swap:
- *
- *   const form = new FormData()
- *   form.append('file', file)
- *   form.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!)
- *   const res = await fetch(
- *     `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
- *     { method: 'POST', body: form },
- *   )
- *   const data = await res.json()
- *   return data.secure_url as string
- * ───────────────────────────────────────────────────────────────────────────
+ * The browser never sees the Cloudinary secret: the file goes to /api/upload,
+ * which checks the Supabase session and uploads server-side, returning the
+ * hosted secure_url. That URL drops straight into Car.image / Car.images[] and
+ * renders in <next/image> (res.cloudinary.com is whitelisted in next.config).
  */
 
-/** Max accepted file size (bytes). Keeps localStorage data URLs sane pre-Cloudinary. */
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+/** Client-side size guard (the server enforces its own ceiling too). */
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export class ImageUploadError extends Error {}
 
@@ -32,13 +17,25 @@ export async function uploadImage(file: File): Promise<string> {
     throw new ImageUploadError('Only image files are allowed.');
   }
   if (file.size > MAX_IMAGE_BYTES) {
-    throw new ImageUploadError('Image is larger than 5 MB.');
+    throw new ImageUploadError('Image is larger than 10 MB.');
   }
 
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new ImageUploadError('Could not read the file.'));
-    reader.readAsDataURL(file);
-  });
+  const form = new FormData();
+  form.append('file', file);
+
+  let res: Response;
+  try {
+    res = await fetch('/api/upload', { method: 'POST', body: form });
+  } catch {
+    throw new ImageUploadError('Network error during upload.');
+  }
+
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({ error: 'Upload failed.' }));
+    throw new ImageUploadError(error || 'Upload failed.');
+  }
+
+  const { url } = await res.json();
+  if (!url) throw new ImageUploadError('Upload returned no URL.');
+  return url as string;
 }
