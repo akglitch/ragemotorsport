@@ -2,6 +2,15 @@
 import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
+const COMMON_FEATURES = [
+  'Apple CarPlay', 'Android Auto', 'Bluetooth', 'Navigation System',
+  'Backup Camera', '360° Camera', 'Leather Seats', 'Heated Seats', 'Ventilated Seats',
+  'Sunroof/Moonroof', 'Panoramic Roof', 'Third-Row Seating', 
+  'Blind Spot Monitor', 'Adaptive Cruise Control', 'Lane Departure Warning',
+  'Keyless Entry', 'Push Button Start', 'Alloy Wheels', 'Premium Audio',
+  'AWD/4WD', 'Remote Start', 'Head-Up Display', 'Parking Sensors'
+].sort();
+
 /** Add/remove chip editor for a string list (Car.features). */
 export default function FeatureListEditor({
   value,
@@ -32,7 +41,13 @@ export default function FeatureListEditor({
           placeholder="e.g. Panoramic Sunroof"
           className="input-field flex-1"
           aria-label="Add a feature"
+          list="feature-suggestions"
         />
+        <datalist id="feature-suggestions">
+          {COMMON_FEATURES.filter(f => !value.includes(f)).map(f => (
+            <option key={f} value={f} />
+          ))}
+        </datalist>
         <button type="button" onClick={add} className="btn-outline px-4" aria-label="Add feature">
           <Plus size={16} />
         </button>
