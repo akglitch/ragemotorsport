@@ -31,7 +31,7 @@ function CarsContent() {
 
   const [filters, setFilters] = useState<FilterState>({
     priceMin: 0,
-    priceMax: 150000,
+    priceMax: 2000000,
     makes: initMake ? [initMake] : [],
     fuelTypes: initFuel ? [initFuel] : [],
     transmissions: [],
@@ -50,7 +50,7 @@ function CarsContent() {
   const itemsPerPage = 6;
 
   const resetFilters = () => setFilters({
-    priceMin: 0, priceMax: 150000, makes: [], fuelTypes: [],
+    priceMin: 0, priceMax: 2000000, makes: [], fuelTypes: [],
     transmissions: [], seats: [], yearMin: 1960, yearMax: currentYear + 1,
     conditions: [], categories: [], vaultOnly: false, search: '',
   });

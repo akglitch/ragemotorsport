@@ -16,7 +16,7 @@ const transmissions = ['Automatic', 'Manual'];
 const seatOptions = ['2', '4', '5', '7'];
 const conditions = ['New', 'Used', 'Certified', 'Salvage'];
 
-const PRICE_MAX = 150000;
+const PRICE_MAX = 2000000;
 const YEAR_MIN = 1960;
 const YEAR_MAX = new Date().getFullYear() + 1;
 
