@@ -102,43 +102,85 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg">
-          <div className="px-6 py-4 flex flex-col gap-1">
-            {navLinks.map(l => (
+      {/* Full-screen sleek side navigation */}
+      <div
+        className={`fixed inset-0 z-[100] lg:hidden pointer-events-none transition-opacity duration-500 ${
+          mobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0'
+        }`}
+      >
+        {/* Backdrop */}
+        <div 
+          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          onClick={() => setMobileOpen(false)}
+        />
+        
+        {/* Drawer sliding from left */}
+        <div 
+          className={`absolute inset-y-0 left-0 w-[85%] max-w-sm bg-[var(--bg)] border-r border-white/10 shadow-2xl flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            mobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {/* Header */}
+          <div className="p-6 flex items-center justify-between border-b border-white/5">
+            <span className="text-sm font-semibold tracking-[0.22em] display text-white">
+              RAGEMOTORSPORT
+            </span>
+            <button 
+              onClick={() => setMobileOpen(false)}
+              className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {/* Links */}
+          <div className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6">
+            {navLinks.map((l, i) => (
               <Link
                 key={l.label}
                 href={l.href}
                 onClick={() => setMobileOpen(false)}
-                className="py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                className="text-2xl font-semibold tracking-tight text-white/70 hover:text-white transition-colors flex items-center gap-4"
+                style={{ transitionDelay: mobileOpen ? `${100 + i * 50}ms` : '0ms' }}
               >
                 {l.label}
               </Link>
             ))}
-            
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              {hydrated ? (
-                user ? (
-                  <>
-                    <div className="py-2.5 text-sm font-medium text-gray-700 flex items-center gap-2">
-                      {isPremium ? <Crown size={16} style={{ color: 'var(--gold)' }} /> : <UserIcon size={16} />}
-                      {user.email}
+          </div>
+
+          {/* Footer actions */}
+          <div className="p-6 border-t border-white/5 bg-white/5">
+            {hydrated ? (
+              user ? (
+                <>
+                  <div className="mb-4 flex items-center gap-3 text-white/90">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                      {isPremium ? <Crown size={18} style={{ color: 'var(--gold)' }} /> : <UserIcon size={18} />}
                     </div>
-                    <button onClick={signOut} className="py-2.5 text-sm font-medium text-rose-600 flex items-center gap-2 w-full text-left">
-                      <LogOut size={16} /> Sign out
-                    </button>
-                  </>
-                ) : (
-                  <button onClick={() => { openAuth(); setMobileOpen(false); }} className="py-2.5 text-sm font-medium text-gray-700 flex items-center gap-2 w-full text-left">
-                    <UserIcon size={16} /> Sign in
+                    <div className="text-sm">
+                      <p className="font-semibold">{user.email?.split('@')[0]}</p>
+                      <p className="text-white/50 text-xs">{isPremium ? 'Premium Member' : 'Standard Account'}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => { signOut(); setMobileOpen(false); }}
+                    className="w-full py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <LogOut size={16} /> Sign Out
                   </button>
-                )
-              ) : null}
-            </div>
+                </>
+              ) : (
+                <button 
+                  onClick={() => { openAuth(); setMobileOpen(false); }}
+                  className="w-full py-4 rounded-xl bg-white text-black font-semibold hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
+                >
+                  <UserIcon size={18} /> Sign In to Subscribe
+                </button>
+              )
+            ) : null}
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 }

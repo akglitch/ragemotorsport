@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { UserProvider } from '@/context/UserContext';
+import InitialLoader from '@/components/layout/InitialLoader';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,6 +36,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${plusJakarta.variable}`}>
       <body className="min-h-screen flex flex-col antialiased">
         <UserProvider>
+          <InitialLoader />
           {children}
         </UserProvider>
       </body>
