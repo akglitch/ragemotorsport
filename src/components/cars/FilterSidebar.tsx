@@ -18,7 +18,7 @@ const conditions = ['New', 'Used', 'Certified', 'Salvage'];
 
 const PRICE_MAX = 150000;
 const YEAR_MIN = 1960;
-const YEAR_MAX = 2025;
+const YEAR_MAX = new Date().getFullYear() + 1;
 
 /** Count of active (non-default) filters — shared by the desktop sidebar and the mobile trigger. */
 export function activeFilterCount(filters: FilterState): number {

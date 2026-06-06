@@ -27,6 +27,8 @@ function CarsContent() {
   const initVault = searchParams.get('vault') === '1';
   const showFavs = searchParams.get('favorites') === 'true';
 
+  const currentYear = new Date().getFullYear();
+
   const [filters, setFilters] = useState<FilterState>({
     priceMin: 0,
     priceMax: 150000,
@@ -35,7 +37,7 @@ function CarsContent() {
     transmissions: [],
     seats: [],
     yearMin: 1960,
-    yearMax: 2025,
+    yearMax: currentYear + 1,
     conditions: initCondition ? [initCondition] : [],
     categories: initCategory ? [initCategory] : [],
     vaultOnly: initVault,
@@ -49,7 +51,7 @@ function CarsContent() {
 
   const resetFilters = () => setFilters({
     priceMin: 0, priceMax: 150000, makes: [], fuelTypes: [],
-    transmissions: [], seats: [], yearMin: 1960, yearMax: 2025,
+    transmissions: [], seats: [], yearMin: 1960, yearMax: currentYear + 1,
     conditions: [], categories: [], vaultOnly: false, search: '',
   });
 
