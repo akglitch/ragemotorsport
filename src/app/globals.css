@@ -315,10 +315,29 @@ input[type="range"]::-webkit-slider-thumb:hover {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+@keyframes drawLine {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(20px); clip-path: inset(100% 0 0 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0% 0 0 0); }
+}
+@keyframes revealText {
+  from { opacity: 0; letter-spacing: 0.5em; }
+  to { opacity: 1; letter-spacing: 0.35em; }
+}
+@keyframes loaderOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 
 .animate-fade-in-up { animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .animate-slide-in-left { animation: slideInLeft 0.5s ease forwards; }
 .animate-slide-in-right { animation: slideInRight 0.5s ease forwards; }
+.animate-draw-line { animation: drawLine 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-reveal-up { animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-reveal-text { animation: revealText 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 /* Mobile filter sheet */
 @keyframes fadeIn {
