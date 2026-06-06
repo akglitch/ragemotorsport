@@ -1,21 +1,20 @@
 'use client';
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import SubscribeModal from '@/components/vault/SubscribeModal';
+import AuthModal from '@/components/auth/AuthModal';
+import { createClient } from '@/lib/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 interface UserContextValue {
-  /** Whether the demo user currently has an active Premium Vault membership. */
+  user: User | null;
   isPremium: boolean;
-  /** True once localStorage has been read — guards against hydration mismatch. */
   hydrated: boolean;
-  setPremium: (value: boolean) => void;
-  /** Flip between Free and Premium — used by the header demo toggle. */
-  toggle: () => void;
-  /** Open the global Subscribe modal from anywhere in the app. */
   openSubscribe: () => void;
   closeSubscribe: () => void;
+  openAuth: () => void;
+  closeAuth: () => void;
+  signOut: () => Promise<void>;
 }
-
-const STORAGE_KEY = 'rage-membership';
 
 const UserContext = createContext<UserContextValue | null>(null);
 
@@ -26,35 +25,60 @@ export function useUser(): UserContextValue {
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [subscribeOpen, setSubscribeOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+
+  const supabase = createClient();
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('is_premium')
+      .eq('id', userId)
+      .single();
+    setIsPremium(!!data?.is_premium);
+  }, [supabase]);
 
   useEffect(() => {
-    try {
-      setIsPremium(localStorage.getItem(STORAGE_KEY) === 'premium');
-    } catch {}
-    setHydrated(true);
-  }, []);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) fetchProfile(session.user.id);
+      setHydrated(true);
+    });
 
-  const setPremium = useCallback((value: boolean) => {
-    setIsPremium(value);
-    try {
-      localStorage.setItem(STORAGE_KEY, value ? 'premium' : 'free');
-    } catch {}
-  }, []);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setIsPremium(false);
+      }
+    });
 
-  const toggle = useCallback(() => setPremium(!isPremium), [isPremium, setPremium]);
+    return () => subscription.unsubscribe();
+  }, [supabase.auth, fetchProfile]);
+
+  const signOut = async () => { await supabase.auth.signOut(); };
   const openSubscribe = useCallback(() => setSubscribeOpen(true), []);
   const closeSubscribe = useCallback(() => setSubscribeOpen(false), []);
+  const openAuth = useCallback(() => setAuthOpen(true), []);
+  const closeAuth = useCallback(() => setAuthOpen(false), []);
 
   return (
-    <UserContext.Provider value={{ isPremium, hydrated, setPremium, toggle, openSubscribe, closeSubscribe }}>
+    <UserContext.Provider value={{ user, isPremium, hydrated, openSubscribe, closeSubscribe, openAuth, closeAuth, signOut }}>
       {children}
+      <AuthModal
+        open={authOpen}
+        onClose={closeAuth}
+        onSuccess={() => setAuthOpen(false)}
+      />
       <SubscribeModal
         open={subscribeOpen}
         onClose={closeSubscribe}
-        onSubscribed={() => { setPremium(true); setSubscribeOpen(false); }}
+        onSubscribed={() => { setIsPremium(true); setSubscribeOpen(false); }}
       />
     </UserContext.Provider>
   );
