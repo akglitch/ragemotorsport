@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import SubscribeModal from '@/components/vault/SubscribeModal';
 import AuthModal from '@/components/auth/AuthModal';
 import { createClient } from '@/lib/supabase/client';
@@ -14,6 +14,7 @@ interface UserContextValue {
   openAuth: () => void;
   closeAuth: () => void;
   signOut: () => Promise<void>;
+  refreshPremium: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -31,24 +32,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [subscribeOpen, setSubscribeOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
 
-  const supabase = createClient();
+  // Stable client — never recreated across renders
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('profiles')
       .select('is_premium')
       .eq('id', userId)
       .single();
-    setIsPremium(!!data?.is_premium);
+    if (!error) setIsPremium(!!data?.is_premium);
   }, [supabase]);
 
   useEffect(() => {
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile(session.user.id);
       setHydrated(true);
     });
 
+    // Listen for auth changes (login / logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
@@ -59,16 +63,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth, fetchProfile]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const signOut = async () => { await supabase.auth.signOut(); };
+  const refreshPremium = useCallback(async () => {
+    const { data: { user: u } } = await supabase.auth.getUser();
+    if (u) await fetchProfile(u.id);
+  }, [supabase, fetchProfile]);
+
   const openSubscribe = useCallback(() => setSubscribeOpen(true), []);
   const closeSubscribe = useCallback(() => setSubscribeOpen(false), []);
   const openAuth = useCallback(() => setAuthOpen(true), []);
   const closeAuth = useCallback(() => setAuthOpen(false), []);
 
   return (
-    <UserContext.Provider value={{ user, isPremium, hydrated, openSubscribe, closeSubscribe, openAuth, closeAuth, signOut }}>
+    <UserContext.Provider value={{ user, isPremium, hydrated, openSubscribe, closeSubscribe, openAuth, closeAuth, signOut, refreshPremium }}>
       {children}
       <AuthModal
         open={authOpen}
