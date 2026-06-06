@@ -22,7 +22,7 @@ function Cell({ on }: { on: boolean }) {
 }
 
 export default function PricingPage() {
-  const { isPremium, hydrated, openSubscribe, setPremium } = useUser();
+  const { isPremium, hydrated, openSubscribe } = useUser();
   const premium = hydrated && isPremium;
 
   return (
@@ -54,9 +54,9 @@ export default function PricingPage() {
                 <span className="text-sm" style={{ color: 'var(--muted)' }}>/forever</span>
               </div>
               {premium ? (
-                <button onClick={() => setPremium(false)} className="btn-outline w-full justify-center py-3 text-sm">
-                  Switch to Free
-                </button>
+                <div className="w-full text-center py-3 rounded-lg text-sm font-semibold border" style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}>
+                  Free features included
+                </div>
               ) : (
                 <div className="w-full text-center py-3 rounded-lg text-sm font-semibold" style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
                   Your current plan
