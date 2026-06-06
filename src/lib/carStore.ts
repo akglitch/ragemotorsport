@@ -80,3 +80,17 @@ export async function deleteCar(id: string): Promise<void> {
     throw new Error(error || 'Delete failed.');
   }
 }
+
+/** Toggle the sold status of an admin car via the authenticated API route. */
+export async function markSold(id: string, sold: boolean): Promise<void> {
+  if (!isAdminCar(id)) return;
+  const res = await fetch(`/api/cars/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ is_sold: sold }),
+  });
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({ error: 'Update failed.' }));
+    throw new Error(error || 'Update failed.');
+  }
+}

@@ -32,6 +32,7 @@ export interface Car {
   category: string;
   badge?: string;
   isVault?: boolean;
+  isSold?: boolean;
 }
 
 export interface FilterState {

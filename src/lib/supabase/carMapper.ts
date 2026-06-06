@@ -25,6 +25,7 @@ export interface CarRow {
   category: string;
   badge: string | null;
   is_vault: boolean;
+  is_sold: boolean;
 }
 
 /** Car (app/camelCase) → CarRow (DB/snake_case). */
@@ -53,6 +54,7 @@ export function carToRow(car: Car): CarRow {
     category: car.category,
     badge: car.badge ?? null,
     is_vault: !!car.isVault,
+    is_sold: !!car.isSold,
   };
 }
 
@@ -82,5 +84,6 @@ export function rowToCar(row: CarRow): Car {
     category: row.category,
     badge: row.badge ?? undefined,
     isVault: row.is_vault,
+    isSold: row.is_sold,
   };
 }

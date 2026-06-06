@@ -33,6 +33,7 @@ create table if not exists public.cars (
   category    text not null default '',
   badge       text,
   is_vault    boolean not null default false,
+  is_sold     boolean not null default false,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

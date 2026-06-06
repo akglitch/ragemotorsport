@@ -32,6 +32,7 @@ export default function CarCard({
 }: CarCardProps) {
   const { isPremium, hydrated, openSubscribe } = useUser();
   const locked = !!car.isVault && !(hydrated && isPremium);
+  const sold = !!car.isSold;
 
   return (
     <article className="card group" aria-label={`${car.year} ${car.make} ${car.model}`}>
@@ -41,12 +42,21 @@ export default function CarCard({
           src={car.image}
           alt={`${car.year} ${car.make} ${car.model}`}
           fill
-          className={`object-cover transition-transform duration-700 ${locked ? 'blur-md scale-110' : 'group-hover:scale-110'}`}
+          className={`object-cover transition-transform duration-700 ${locked || sold ? 'blur-md scale-110' : 'group-hover:scale-110'}`}
           loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+
+        {/* SOLD banner */}
+        {sold && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="bg-red-600 text-white text-sm font-black tracking-widest px-6 py-2 rounded-full shadow-lg uppercase rotate-[-12deg]">
+              SOLD
+            </span>
+          </div>
+        )}
 
         {/* Top badges */}
         <div className="absolute top-3 left-3 flex gap-1.5">
@@ -159,6 +169,13 @@ export default function CarCard({
                 <Crown size={14} />
                 Unlock
               </button>
+            ) : sold ? (
+              <span
+                className="inline-flex items-center gap-1.5 text-sm py-2.5 px-5 rounded-xl font-semibold"
+                style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}
+              >
+                Sold
+              </span>
             ) : (
               <Link
                 href={`/cars/${car.id}`}

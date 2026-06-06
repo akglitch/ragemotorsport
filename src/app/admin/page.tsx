@@ -2,9 +2,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Pencil, Trash2, Copy, Crown, Car as CarIcon, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Copy, Crown, Car as CarIcon, Loader2, Tag, RotateCcw } from 'lucide-react';
 import { Car } from '@/lib/types';
-import { getAllCars, deleteCar, isAdminCar } from '@/lib/carStore';
+import { getAllCars, deleteCar, markSold, isAdminCar } from '@/lib/carStore';
 import { formatPrice } from '@/lib/utils';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/ui/Toast';
@@ -24,6 +24,20 @@ export default function AdminDashboard() {
     await deleteCar(car.id);
     addToast('Listing deleted.', 'info');
     load();
+  };
+
+  const handleSoldToggle = async (car: Car) => {
+    const nowSold = !car.isSold;
+    // Optimistic update
+    setCars(prev => prev ? prev.map(c => c.id === car.id ? { ...c, isSold: nowSold } : c) : prev);
+    try {
+      await markSold(car.id, nowSold);
+      addToast(nowSold ? `${car.make} ${car.model} marked as sold.` : `${car.make} ${car.model} marked as available.`, 'success');
+    } catch {
+      // Revert on failure
+      setCars(prev => prev ? prev.map(c => c.id === car.id ? { ...c, isSold: !nowSold } : c) : prev);
+      addToast('Failed to update sold status.', 'error');
+    }
   };
 
   const adminCount = cars?.filter(c => isAdminCar(c.id)).length ?? 0;
@@ -105,14 +119,28 @@ export default function AdminDashboard() {
                           {editable ? <><Pencil size={13} /> Edit</> : <><Copy size={13} /> Duplicate</>}
                         </Link>
                         {editable && (
-                          <button
-                            onClick={() => handleDelete(car)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600"
-                            style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
-                            aria-label="Delete listing"
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleSoldToggle(car)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors"
+                              style={car.isSold
+                                ? { borderColor: 'var(--accent)', color: 'var(--accent)', background: 'rgba(var(--accent-rgb),0.08)' }
+                                : { borderColor: 'var(--border)', color: 'var(--muted)' }
+                              }
+                              title={car.isSold ? 'Mark as available' : 'Mark as sold'}
+                              aria-label={car.isSold ? `Mark ${car.make} ${car.model} as available` : `Mark ${car.make} ${car.model} as sold`}
+                            >
+                              {car.isSold ? <><RotateCcw size={13} /> Available</> : <><Tag size={13} /> Sold</>}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(car)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600"
+                              style={{ borderColor: 'var(--border)', color: 'var(--muted)' }}
+                              aria-label="Delete listing"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>
