@@ -93,10 +93,10 @@ function CheckGroup({ options, selected, onChange }: {
         return (
           <label key={opt} className="flex items-center gap-3 cursor-pointer py-2 group">
             <input type="checkbox" checked={active} onChange={() => toggle(opt)} className="sr-only" aria-label={opt} />
-            <span className={`w-[18px] h-[18px] rounded-md border flex items-center justify-center transition-all ${
-              active ? 'bg-[var(--ink)] border-[var(--ink)] text-white' : 'border-[var(--border)] bg-[var(--surface)] text-transparent group-hover:border-[var(--muted)]'
+            <span className={`w-[18px] h-[18px] rounded-md border flex items-center justify-center transition-all duration-300 ${
+              active ? 'bg-[var(--text)] border-[var(--text)] text-[var(--bg)] shadow-md' : 'border-[var(--border)] bg-[var(--surface)] text-transparent group-hover:border-[var(--muted)]'
             }`}>
-              <Check size={12} strokeWidth={3} />
+              <Check size={12} strokeWidth={4} />
             </span>
             <span className={`text-sm transition-colors ${active ? 'text-[var(--text)] font-medium' : 'text-[var(--muted)] group-hover:text-[var(--text)]'}`}>
               {opt}
@@ -122,10 +122,10 @@ function PillGroup({ options, selected, onChange, format }: {
             key={opt}
             onClick={() => toggle(opt)}
             aria-pressed={active}
-            className={`px-3.5 py-2.5 rounded-lg text-xs font-semibold border transition-all ${
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-300 ${
               active
-                ? 'bg-[var(--ink)] border-[var(--ink)] text-white'
-                : 'bg-[var(--surface)] border-[var(--border)] text-[var(--muted)] hover:border-[var(--ink)] hover:text-[var(--text)]'
+                ? 'bg-[var(--text)] border-[var(--text)] text-[var(--bg)] shadow-md'
+                : 'bg-[var(--surface)] border-[var(--border)] text-[var(--muted)] hover:border-[var(--muted)] hover:text-[var(--text)]'
             }`}
           >
             {format ? format(opt) : opt}
@@ -159,7 +159,7 @@ function RangeSlider({ min, max, step = 1, valueMin, valueMax, onMin, onMax, lab
         {/* track */}
         <div className="absolute inset-x-0 h-[3px] rounded-full bg-[var(--border)]" />
         {/* filled segment */}
-        <div className="absolute h-[3px] rounded-full bg-[var(--ink)]" style={{ left: `${pct(valueMin)}%`, right: `${100 - pct(valueMax)}%` }} />
+        <div className="absolute h-[3px] rounded-full bg-[var(--text)] shadow-[0_0_8px_rgba(0,0,0,0.2)] dark:shadow-[0_0_8px_rgba(255,255,255,0.2)]" style={{ left: `${pct(valueMin)}%`, right: `${100 - pct(valueMax)}%` }} />
         <input
           type="range" min={min} max={max} step={step} value={valueMin}
           onChange={e => onMin(Math.min(Number(e.target.value), valueMax))}
@@ -241,10 +241,12 @@ export default function FilterSidebar({ filters, onChange, onReset }: FilterSide
 
   return (
     <aside
-      className="rounded-2xl sticky top-24 bg-[var(--surface)] border border-[var(--border)] px-6"
-      style={{ boxShadow: 'var(--card-shadow)' }}
+      className="rounded-[24px] sticky top-28 bg-[var(--surface)]/80 backdrop-blur-xl border border-[var(--border)] px-6 pb-2 relative overflow-hidden shadow-2xl"
       aria-label="Filter cars"
     >
+      {/* Subtle top glow */}
+      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[var(--border)] to-transparent opacity-50" />
+
       {/* Header */}
       <div className="flex items-center justify-between py-5 border-b border-[var(--border)]">
         <h2 className="display text-lg font-semibold text-[var(--text)]">

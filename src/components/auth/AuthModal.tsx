@@ -39,6 +39,11 @@ export default function AuthModal({ open, onClose, onSuccess }: Props) {
     } else if (isSignUp && result.data?.user?.identities?.length === 0) {
       // Supabase returns this when user exists but signed up with different provider or we don't have email confirmations enabled
       setError('An account with this email already exists. Try logging in.');
+    } else if (isSignUp) {
+      // Switch to login view on successful signup
+      setIsSignUp(false);
+      setPassword('');
+      setError('Account created successfully! Please log in.');
     } else {
       onSuccess();
     }
